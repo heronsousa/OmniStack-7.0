@@ -1,6 +1,6 @@
 const express = require('express');
 
-const routes = express.Router();
+const routes = new express.Router();
 
 routes.get('/', (req, res) => {
   return res.json( {message: `Hello ${req.query.name}!`})
