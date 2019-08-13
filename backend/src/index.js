@@ -9,5 +9,3 @@ mongoose.connect('mongodb+srv://heron:Part8416@cluster0-60xck.mongodb.net/test?r
 app.use(require('./routes'));
 app.use(express.json());
 app.listen(3333)
-
-
