@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { View, TouchableOpacity, Image, Text, TextInput, StyleSheet, ScrollView } from 'react-native';
 import * as ImagePicker  from 'expo-image-picker';
 import * as Permissions from 'expo-permissions';
+import api from '../services/api';
 
 export default class New extends Component {
   static navigationOptions = {
@@ -10,6 +11,7 @@ export default class New extends Component {
 
   state = {
     image: null,
+    preview: null,
     author: '',
     place: '',
     description: '',
@@ -23,95 +25,128 @@ export default class New extends Component {
       allowsEditing: true
     });
 
-    console.log(result);
-
     if (!result.cancelled) {
-      this.setState({ image: result.uri });
+      this.setState({ preview: result.uri });
     }
   };
 
   takePicture = async () => {
     await Permissions.askAsync(Permissions.CAMERA);
-    const { cancelled, uri } = await ImagePicker.launchCameraAsync({
+    let result = await ImagePicker.launchCameraAsync({
       allowsEditing: false,
     });
-    console.log(uri);
-    this.setState({ image: uri });
+
+    
+    let prefix;
+    let ext;
+
+    if(result.fileName){
+      [prefix, ext] = result.fileName.split('.');
+      ext = ext.toLowerCase() === 'heic' ? 'jpg' : ext;
+    } else {
+      prefix = new Date().getTime();
+      ext = 'jpg';
+    }
+    
+    const image = {
+      uri: result.uri,
+      type: result.type,
+      name : `${prefix}.${ext}`
+    }
+    
+    if (!result.cancelled) {
+      this.setState({ preview: result.uri, image });
+    }
   };  
+
+  handelSubmit = async () => {
+
+    const data = new FormData();
+
+    data.append('image', this.state.image);
+    data.append('author', this.state.author);
+    data.append('place', this.state.place);
+    data.append('desription', this.state.desription);
+    data.append('hashtags', this.state.hashtags);
+
+    await api.post('posts', data);
+
+    this.props.navigation.navigate('Feed');
+}
   
   render() {
     
-    let {image} = this.state;
+    let {preview} = this.state;
 
     return(
 
       <ScrollView>
 
-      <View style={StyleSheet.container}>
+        <View style={StyleSheet.container}>
 
-        <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', marginTop: 10 }}>
-          <TouchableOpacity style={styles.selectButton} onPress={this.selectPicture}>
-              <Text style={styles.selectButtonText}>Galeria</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', marginTop: 10 }}>
+            <TouchableOpacity style={styles.selectButton} onPress={this.selectPicture}>
+                <Text style={styles.selectButtonText}>Galeria</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.selectButton} onPress={this.takePicture}>
-              <Text style={styles.selectButtonText}>Camera</Text>
+            <TouchableOpacity style={styles.selectButton} onPress={this.takePicture}>
+                <Text style={styles.selectButtonText}>Camera</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View>
+            {preview &&
+              <View style={{alignItems: 'center', justifyContent: 'center', marginTop: 10 }}>
+                <Image source={{ uri: preview }} style={{  width: '90%', height: 400,  }} />
+              </View>
+            }
+          </View>
+
+
+          <TextInput
+            style={styles.input}
+            autoCorrect={false}
+            autoCapitalize='none'
+            placeholder='Nome do autor'
+            placeholderTextColor='#999'
+            value={this.state.author}
+            onChangeText={author => this.setState({ author })}
+          />
+
+          <TextInput
+            style={styles.input}
+            autoCorrect={false}
+            autoCapitalize='none'
+            placeholder='Local'
+            placeholderTextColor='#999'
+            value={this.state.place}
+            onChangeText={place => this.setState({ place })}
+          />
+
+          <TextInput
+            style={styles.input}
+            autoCorrect={false}
+            autoCapitalize='none'
+            placeholder='Descrição'
+            placeholderTextColor='#999'
+            value={this.state.description}
+            onChangeText={description => this.setState({ description })}
+          />
+
+          <TextInput
+            style={styles.input}
+            autoCorrect={false}
+            autoCapitalize='none'
+            placeholder='Hashtags'
+            placeholderTextColor='#999'
+            value={this.state.hashtags}
+            onChangeText={hashtags => this.setState({ hashtags })}
+          />
+
+          <TouchableOpacity style={styles.shareButton} onPress={this.handelSubmit}>
+            <Text style={styles.shareButtonText}>Compartilhar</Text>
           </TouchableOpacity>
         </View>
-
-        <View>
-          {image &&
-            <View style={{alignItems: 'center', justifyContent: 'center', marginTop: 10 }}>
-              <Image source={{ uri: image }} style={{  width: '90%', height: 400,  }} />
-            </View>
-          }
-        </View>
-
-
-        <TextInput
-          style={styles.input}
-          autoCorrect={false}
-          autoCapitalize='none'
-          placeholder='Nome do autor'
-          placeholderTextColor='#999'
-          value={this.state.author}
-          onChangeText={author => this.setState({ author })}
-        />
-
-        <TextInput
-          style={styles.input}
-          autoCorrect={false}
-          autoCapitalize='none'
-          placeholder='Local'
-          placeholderTextColor='#999'
-          value={this.state.place}
-          onChangeText={place => this.setState({ place })}
-        />
-
-        <TextInput
-          style={styles.input}
-          autoCorrect={false}
-          autoCapitalize='none'
-          placeholder='Descrição'
-          placeholderTextColor='#999'
-          value={this.state.description}
-          onChangeText={description => this.setState({ description })}
-        />
-
-        <TextInput
-          style={styles.input}
-          autoCorrect={false}
-          autoCapitalize='none'
-          placeholder='Hashtags'
-          placeholderTextColor='#999'
-          value={this.state.hashtags}
-          onChangeText={hashtags => this.setState({ hashtags })}
-        />
-
-        <TouchableOpacity style={styles.shareButton} onPress={() => {}}>
-          <Text style={styles.shareButtonText}>Compartilhar</Text>
-        </TouchableOpacity>
-      </View>
 
       </ScrollView>
     );
