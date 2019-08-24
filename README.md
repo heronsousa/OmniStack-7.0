@@ -1,1 +1,1 @@
-# OmniStack
+# OmniStack InstaRocket
