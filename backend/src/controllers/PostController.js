@@ -4,7 +4,12 @@ const path = require('path');
 const fs = require('fs');
 
 module.exports = {
-  async index(req, res) {
+
+  async index (req, res) {
+    res.send({ ok: true, user: req.userId });
+  },
+
+  async list(req, res) {
     const posts = await Post.find().sort('-createdAt');
 
     return res.json(posts)
