@@ -5,8 +5,12 @@ const fs = require('fs');
 
 module.exports = {
 
-  async index (req, res) {
+  async index(req, res) {
     res.send({ ok: true, user: req.userId });
+  },
+
+  async listUserPosts(req, res){
+    res.send({ user: req.userId });
   },
 
   async list(req, res) {
@@ -42,5 +46,13 @@ module.exports = {
     req.io.emit('post', post);
 
     return res.json(post);
-  }
+  },
+
+  async editPost(req, res){
+    res.send({ user: req.userId });
+  },
+
+  async deletePost(req, res){
+    res.send({ user: req.userId });
+  },
 };

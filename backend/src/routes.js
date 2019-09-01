@@ -19,5 +19,8 @@ routes.post('/auth', AuthController.auth);
 
 routes.use(authMiddleware);
 routes.get('/post', PostController.index);
+routes.get('/myposts', PostController.listUserPosts);
+routes.put('/:postId', PostController.editPost);
+routes.delete('/:postId', PostController.deletePost);
 
 module.exports = routes;
